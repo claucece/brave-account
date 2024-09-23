@@ -105,7 +105,7 @@
   </head>
   <body class="d-flex align-items-center py-4 bg-body-tertiary">
    
-<main class="form-signin w-100 m-auto">
+<main class="form-signin w-100 m-auto" style="z-index:999999">
   <form class="form-container p-5">
     <img class="mb-4" src="img/brave.svg" alt="" width="128">
     <h1 class="h4 mb-3 fw-normal">You're logged in! 😎</h1>
@@ -115,6 +115,30 @@
   </form>
 </main>
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/confetti.js"></script>
+<script>
+        // for starting the confetti 
 
+        const start = () => {
+            setTimeout(function() {
+                confetti.start()
+            }, 100); // 1000 is time that after 1 second start the confetti ( 1000 = 1 sec)
+        };
+
+        //  for stopping the confetti 
+
+        const stop = () => {
+            setTimeout(function() {
+                confetti.stop()
+            }, 5000); // 5000 is time that after 5 second stop the confetti ( 5000 = 5 sec)
+        };
+// after this here we are calling both the function so it works
+        start();
+      
+
+// if you dont want to make it stop and make it infinite you can just remove the stop function 😊
+
+
+</script>
     </body>
 </html>
