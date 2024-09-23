@@ -29,7 +29,8 @@ pub fn start(listener: TcpListener) -> Result<Server, std::io::Error> {
             .wrap(middleware::Logger::default())
             .service(Files::new("/static", "static/").use_last_modified(true))
             .route("/health", web::get().to(HttpResponse::Ok))
-            .service(handlers::index) // new line
+            .service(handlers::index)
+            .service(handlers::register)
     })
     .listen(listener)?
     .run();
