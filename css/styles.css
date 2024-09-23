@@ -1,7 +1,10 @@
 html,
 body {
   height: 100%;
+  background-image: url(../img/bg.png);
+  background-size: cover;
 }
+
 
 .form-signin {
   max-width: 500px;
