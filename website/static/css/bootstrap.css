@@ -2601,12 +2601,10 @@ textarea.form-control-lg {
   line-height: 1.25;
 }
 .form-floating > label {
-  position: absolute;
   top: 0;
   left: 0;
   z-index: 2;
   height: 100%;
-  padding: 1rem 0.75rem;
   overflow: hidden;
   text-align: start;
   text-overflow: ellipsis;

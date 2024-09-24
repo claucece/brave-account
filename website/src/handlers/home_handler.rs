@@ -1,4 +1,6 @@
+use actix_files::NamedFile;
 use actix_web::{get, post, web, HttpResponse, Responder};
+use base64::encode;
 use opaque_ke::{ciphersuite::CipherSuite, ksf::Ksf, Ristretto255};
 use opaque_ke::{
     ClientRegistration, ClientRegistrationFinishParameters, CredentialFinalization,
@@ -8,6 +10,7 @@ use opaque_ke::{
 use rand::rngs::OsRng;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[allow(dead_code)]
 struct DefaultCipherSuite;
@@ -41,7 +44,10 @@ pub async fn index(templates: web::Data<tera::Tera>) -> impl Responder {
 }
 
 #[post("/register")]
-pub async fn register(form: web::Form<RegisterForm>) -> impl Responder {
+pub async fn register(
+    form: web::Form<RegisterForm>,
+    templates: web::Data<tera::Tera>,
+) -> impl Responder {
     let username = form.email.clone();
     let password = form.password.clone();
 
@@ -64,7 +70,6 @@ pub async fn register(form: web::Form<RegisterForm>) -> impl Responder {
     .unwrap();
 
     // Client sends registration_request_bytes to server
-
     let server_registration_start_result = ServerRegistration::<DefaultCipherSuite>::start(
         &server_setup,
         RegistrationRequest::deserialize(&registration_request_bytes).unwrap(),
@@ -74,7 +79,6 @@ pub async fn register(form: web::Form<RegisterForm>) -> impl Responder {
     let registration_response_bytes = server_registration_start_result.message.serialize();
 
     // Server sends registration_response_bytes to client
-
     let client_finish_registration_result = client_registration_start_result
         .state
         .finish(
@@ -87,18 +91,37 @@ pub async fn register(form: web::Form<RegisterForm>) -> impl Responder {
     let message_bytes = client_finish_registration_result.message.serialize();
 
     // Client sends message_bytes to server
-
     let password_file = ServerRegistration::finish(
         RegistrationUpload::<DefaultCipherSuite>::deserialize(&message_bytes).unwrap(),
     );
     let ser = password_file.serialize();
     let vec: Vec<u8> = ser.to_vec();
     println!("Serialized password file: {:?}", vec);
+    let base64_encoded_vec = encode(&vec);
 
     // Handle form processing (e.g., save to database, authentication, etc.)
     // Return response
-    HttpResponse::Ok().body(format!(
-        "Received email: {}, password: {}",
-        form.email, form.password
-    ))
+    //HttpResponse::Ok().body(format!(
+    //    "Received email: {}, password: {}",
+    //   form.email, form.password
+    //))
+
+    //let path: PathBuf = PathBuf::from("templates/login-success.html"); // Update with your actual path
+    //NamedFile::open(path)
+
+    // Prepare the context for rendering the success page
+    let mut context = tera::Context::new();
+    context.insert("email", &form.email);
+    context.insert("password_file", &base64_encoded_vec);
+
+    // Render the success template after registration
+    match templates.render("login-success.html", &context) {
+        Ok(s) => HttpResponse::Ok().content_type("text/html").body(s),
+        Err(e) => {
+            println!("{:?}", e);
+            HttpResponse::InternalServerError()
+                .content_type("text/html")
+                .body("<p>Something went wrong!</p>")
+        }
+    }
 }

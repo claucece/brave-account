@@ -17,3 +17,4 @@ serde_json = "1.0"
 rand = { version = "0.8", default-features = false }
 zeroize = "1.5"
 opaque-ke = { git = "https://github.com/facebook/opaque-ke", branch = "main", features = ["ristretto255"] }
+base64 = "0.13"
