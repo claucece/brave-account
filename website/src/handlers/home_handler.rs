@@ -54,22 +54,19 @@ pub async fn register(
     println!("Email: {}, Password: {}", form.email, form.password);
     let mut client_rng = OsRng;
 
+    // This is only for registration
     // Start client registration
+    // Client function
     let client_registration_start_result =
         ClientRegistration::<DefaultCipherSuite>::start(&mut client_rng, password.as_bytes())
             .unwrap();
     let registration_request_bytes = client_registration_start_result.message.serialize();
 
+    // Server function
+    // The server needs setup
     let mut rng = OsRng;
     let server_setup = ServerSetup::<DefaultCipherSuite>::new(&mut rng);
-    let server_registration_start_result = ServerRegistration::<DefaultCipherSuite>::start(
-        &server_setup,
-        RegistrationRequest::deserialize(&registration_request_bytes).unwrap(),
-        username.as_bytes(),
-    )
-    .unwrap();
 
-    // Client sends registration_request_bytes to server
     let server_registration_start_result = ServerRegistration::<DefaultCipherSuite>::start(
         &server_setup,
         RegistrationRequest::deserialize(&registration_request_bytes).unwrap(),
@@ -78,7 +75,7 @@ pub async fn register(
     .unwrap();
     let registration_response_bytes = server_registration_start_result.message.serialize();
 
-    // Server sends registration_response_bytes to client
+    // Client function
     let client_finish_registration_result = client_registration_start_result
         .state
         .finish(
@@ -94,20 +91,10 @@ pub async fn register(
     let password_file = ServerRegistration::finish(
         RegistrationUpload::<DefaultCipherSuite>::deserialize(&message_bytes).unwrap(),
     );
-    let ser = password_file.serialize();
+    let ser = password_file.serialize(); // This is the file to store
     let vec: Vec<u8> = ser.to_vec();
     println!("Serialized password file: {:?}", vec);
     let base64_encoded_vec = encode(&vec);
-
-    // Handle form processing (e.g., save to database, authentication, etc.)
-    // Return response
-    //HttpResponse::Ok().body(format!(
-    //    "Received email: {}, password: {}",
-    //   form.email, form.password
-    //))
-
-    //let path: PathBuf = PathBuf::from("templates/login-success.html"); // Update with your actual path
-    //NamedFile::open(path)
 
     // Prepare the context for rendering the success page
     let mut context = tera::Context::new();
